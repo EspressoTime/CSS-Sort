@@ -1,9 +1,18 @@
-//ToDo: Fix spacing in values, removing commas
-//No selector
+//fix line breaks in values
+//if no css at all
+//brackets in brackets
 
 function getSelectors(input) {
   //create an array with arrays of each selector and properties
-  input = input.replace(/[,\n\r ]+/g, ""); //remove commas and whitespace
+  //input = input.replace(/[,\n\r ]+/g, ""); //remove commas and whitespace
+  input = input.replace(/ +(?= )/g, ""); //reduce excess spaces to single
+  input = input.replace(/[\n\r]+/g, ""); //just remove newlines
+  if (!input.includes("{")) {
+    //if no selectors, return
+    var noSelector = [];
+    noSelector.push(["noSelector", input]);
+    return noSelector;
+  }
   let allSelectorsArr = input.split(/{|}/).filter(x => x); //removes undefined split
   let selectors = [];
   for (var i = 0; i < allSelectorsArr.length - 1; ++i) {
@@ -17,13 +26,14 @@ function getSelectors(input) {
 function getProperties(selectors) {
   let propsToSort = [];
   for (var i = 0; i < selectors.length; i++) {
-    let eachSelector = selectors[i][0];
-    let eachProp = selectors[i][1].split(";").filter(x => x); //removes undefined split after last semicolon
+    let eachSelector = selectors[i][0].trim();
+    let eachProp = selectors[i][1].trim();
+    eachProp = eachProp.split(";").filter(x => x); //removes undefined split after last semicolon
     let propertyObj = {};
     for (var x = 0; x < eachProp.length; x++) {
       let propSplit = eachProp[x].split(":"); //separate property and value
-      let property = propSplit[0];
-      let value = propSplit[1];
+      let property = propSplit[0].trim();
+      let value = propSplit[1].trim();
       propertyObj[property] = value;
     }
     propsToSort.push([eachSelector, propertyObj]);
@@ -32,7 +42,6 @@ function getProperties(selectors) {
 }
 
 function sortProperties(byProperties) {
-  //const theOrder = ['z-index', 'display', 'font-size', 'font-weight', 'width', 'dogs'];
   const theOrder = bootstrapOrder;
   for (var i = 0; i < byProperties.length; i++) {
     //skip if there is only one property..
@@ -64,6 +73,14 @@ function reassemble(sorted, inclStyles) {
   let output = "";
   let whitespace;
   inclStyles ? (whitespace = "  ") : (whitespace = "");
+  if (sorted[0][0] == "noSelector") {
+    for (const ea of sorted) {
+      Object.keys(ea[1]).map(function(key, index) {
+        output += key + ": " + ea[1][key] + ";\n";
+      });
+    }
+    return output;
+  }
   for (const ea of sorted) {
     output += whitespace + ea[0] + " {\n";
     Object.keys(ea[1]).map(function(key, index) {
@@ -87,7 +104,6 @@ function main() {
   let byProperties = getProperties(bySelectors);
   let sortedProperties = sortProperties(byProperties);
   let reassembled = reassemble(sortedProperties, inclStyle);
-  console.log(reassembled);
   document.getElementById("results").innerHTML = reassembled;
 }
 
