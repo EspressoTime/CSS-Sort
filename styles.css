@@ -74,6 +74,14 @@ body, html{
   text-align: center;
   padding: 30px 0 10px;
 }
+.beta {
+  -webkit-transform: rotate(-25deg);
+    -ms-transform: rotate(-25deg);
+        transform: rotate(-25deg);
+        position: absolute;
+        margin: 25px 0 0 -60px;
+        color: #ff2644;
+}
 
 .subheading {
   margin-bottom: 5px;
